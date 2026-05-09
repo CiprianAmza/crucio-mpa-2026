@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { SubmissionDetailDialog } from "@/components/submission-detail-dialog";
 import { Trophy, Calendar } from "lucide-react";
 
 export default async function ProfilePage() {
@@ -96,39 +97,51 @@ export default async function ProfilePage() {
               </Link>.
             </p>
           ) : (
-            <ul className="divide-y divide-white/5">
-              {submissions.map((s) => (
-                <li key={s.id} className="py-3 flex items-center justify-between text-sm">
-                  <div>
-                    <Link
-                      href={`/problems/${s.problem.slug}`}
-                      className="font-medium hover:text-rose-300"
-                    >
-                      {s.problem.title}
-                    </Link>
-                    <div className="text-xs text-muted-foreground">
-                      {new Date(s.createdAt).toLocaleString()}
-                      {s.isVoice && (
-                        <Badge variant="outline" className="ml-2 text-xs">
-                          voice
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-right font-mono text-xs">
-                    <div className="text-rose-300 font-bold">
-                      {s.score.toLocaleString()}
-                    </div>
-                    <div
-                      className={s.eloDelta >= 0 ? "text-emerald-400" : "text-red-400"}
-                    >
-                      {s.eloDelta >= 0 ? "+" : ""}
-                      {s.eloDelta} ELO
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <>
+              <p className="text-xs text-muted-foreground mb-2">
+                Click a submission to see your answer + AI feedback.
+              </p>
+              <ul className="divide-y divide-white/5">
+                {submissions.map((s) => (
+                  <li key={s.id}>
+                    <SubmissionDetailDialog
+                      submission={{ ...s, problemTitle: s.problem.title }}
+                      trigger={
+                        <button
+                          type="button"
+                          className="w-full py-3 px-2 flex items-center justify-between text-sm rounded hover:bg-white/5 transition text-left"
+                        >
+                          <div>
+                            <span className="font-medium">{s.problem.title}</span>
+                            <div className="text-xs text-muted-foreground">
+                              {new Date(s.createdAt).toLocaleString()}
+                              {s.isVoice && (
+                                <Badge variant="outline" className="ml-2 text-xs">
+                                  voice
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right font-mono text-xs">
+                            <div className="text-rose-300 font-bold">
+                              {s.score.toLocaleString()}
+                            </div>
+                            <div
+                              className={
+                                s.eloDelta >= 0 ? "text-emerald-400" : "text-red-400"
+                              }
+                            >
+                              {s.eloDelta >= 0 ? "+" : ""}
+                              {s.eloDelta} ELO
+                            </div>
+                          </div>
+                        </button>
+                      }
+                    />
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </CardContent>
       </Card>

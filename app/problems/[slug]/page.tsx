@@ -4,7 +4,8 @@ import { prisma } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ProblemSolver } from "@/components/problem-solver";
-import { Target } from "lucide-react";
+import { SubmissionDetailDialog } from "@/components/submission-detail-dialog";
+import { Target, ChevronRight } from "lucide-react";
 
 function difficultyLabel(d: number) {
   return ["", "Easy", "Easy+", "Medium", "Hard", "Brutal"][d] ?? "?";
@@ -36,6 +37,8 @@ export default async function ProblemDetailPage({
       score: true,
       eloDelta: true,
       isVoice: true,
+      answerText: true,
+      feedback: true,
       createdAt: true,
     },
   });
@@ -78,25 +81,37 @@ export default async function ProblemDetailPage({
         <Card className="border-white/10 bg-black/30 mt-8">
           <CardHeader>
             <CardTitle className="text-base">Your recent attempts</CardTitle>
+            <p className="text-xs text-muted-foreground">Click any attempt to see your answer + feedback.</p>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-1">
               {previous.map((s) => (
-                <li key={s.id} className="flex justify-between items-center font-mono text-xs">
-                  <span className="text-muted-foreground">
-                    {new Date(s.createdAt).toLocaleString()}
-                    {s.isVoice ? " · voice" : " · text"}
-                  </span>
-                  <span>
-                    Score{" "}
-                    <span className="text-rose-300">{s.score.toLocaleString()}</span>
-                    {" · "}
-                    ELO{" "}
-                    <span className={s.eloDelta >= 0 ? "text-emerald-400" : "text-red-400"}>
-                      {s.eloDelta >= 0 ? "+" : ""}
-                      {s.eloDelta}
-                    </span>
-                  </span>
+                <li key={s.id}>
+                  <SubmissionDetailDialog
+                    submission={{ ...s, problemTitle: problem.title }}
+                    trigger={
+                      <button
+                        type="button"
+                        className="w-full flex justify-between items-center gap-2 font-mono text-xs px-2 py-2 rounded hover:bg-white/5 transition text-left"
+                      >
+                        <span className="text-muted-foreground">
+                          {new Date(s.createdAt).toLocaleString()}
+                          {s.isVoice ? " · voice" : " · text"}
+                        </span>
+                        <span className="flex items-center gap-2">
+                          Score{" "}
+                          <span className="text-rose-300">{s.score.toLocaleString()}</span>
+                          {" · "}
+                          ELO{" "}
+                          <span className={s.eloDelta >= 0 ? "text-emerald-400" : "text-red-400"}>
+                            {s.eloDelta >= 0 ? "+" : ""}
+                            {s.eloDelta}
+                          </span>
+                          <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                        </span>
+                      </button>
+                    }
+                  />
                 </li>
               ))}
             </ul>
