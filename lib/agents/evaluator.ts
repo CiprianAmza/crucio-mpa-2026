@@ -2,6 +2,7 @@ import { generateText, stepCountIs } from "ai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
 import { evaluatorTools } from "./tools";
+import { tryParseJson } from "./parse";
 
 const MODEL_ID = "gemini-2.5-flash-lite";
 
@@ -44,8 +45,6 @@ Rules:
 - Never reproduce the user's text verbatim — comment on it.
 - Output ONLY the JSON. No preamble, no markdown fences.`;
 
-const FINAL_JSON_REGEX = /\{[\s\S]*\}/;
-
 export async function evaluateAnswer(args: {
   userId: string;
   problemId: string;
@@ -71,11 +70,30 @@ Now grade it. Call tools first, then return ONLY the final JSON.`;
   });
 
   const text = result.text ?? "";
-  const match = text.match(FINAL_JSON_REGEX);
-  if (!match) {
-    throw new Error("Evaluator did not return valid JSON. Raw: " + text.slice(0, 200));
+  let parsed = tryParseJson<unknown>(text);
+
+  // Retry once with a tighter prompt if the model emitted prose-only or malformed JSON
+  if (!parsed) {
+    const retry = await generateText({
+      model: google(MODEL_ID),
+      system:
+        "You are a JSON formatter. Convert the input into the exact JSON shape requested. Output ONLY the JSON object, no markdown fences, no preamble.",
+      prompt: `The previous evaluation response was malformed:
+"""
+${text.slice(0, 4000)}
+"""
+
+Re-emit it as a single valid JSON object with EXACTLY these keys: score (int 0..10000), oneLine (string), perCriterion (array of {name, score 0..100, comment}), strengths (array of strings), gaps (array of strings), studyHints (array of strings).`,
+      temperature: 0,
+    });
+    parsed = tryParseJson<unknown>(retry.text ?? "");
   }
-  const parsed = JSON.parse(match[0]);
-  const validated = evaluationSchema.parse(parsed);
-  return validated;
+
+  if (!parsed) {
+    throw new Error(
+      "Evaluator did not return valid JSON after retry. Raw: " +
+        text.slice(0, 200),
+    );
+  }
+  return evaluationSchema.parse(parsed);
 }

@@ -2,6 +2,7 @@ import { generateText, stepCountIs } from "ai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
 import { coachTools } from "./tools";
+import { tryParseJson } from "./parse";
 
 const MODEL_ID = "gemini-2.5-flash-lite";
 
@@ -48,8 +49,6 @@ Rules:
 - If the user has 0 submissions, give a starter plan and pick easy problems.
 - Output ONLY the JSON. No markdown, no preamble.`;
 
-const FINAL_JSON_REGEX = /\{[\s\S]*\}/;
-
 export async function getCoachAdvice(args: {
   userId: string;
 }): Promise<CoachAdvice> {
@@ -67,10 +66,28 @@ Build their personalized study plan now. Use the tools, then return ONLY the fin
   });
 
   const text = result.text ?? "";
-  const match = text.match(FINAL_JSON_REGEX);
-  if (!match) {
-    throw new Error("Coach did not return valid JSON. Raw: " + text.slice(0, 200));
+  let parsed = tryParseJson<unknown>(text);
+
+  if (!parsed) {
+    const retry = await generateText({
+      model: google(MODEL_ID),
+      system:
+        "You are a JSON formatter. Convert the input into the exact JSON shape requested. Output ONLY the JSON object, no markdown fences, no preamble.",
+      prompt: `The previous coach response was malformed:
+"""
+${text.slice(0, 4000)}
+"""
+
+Re-emit it as a single valid JSON object with EXACTLY these keys: summary (string), weakTopics (array of {slug, name, avgScore (number), hint (string)}), recommendedProblems (array of {slug, title, reason}), nextSession (string).`,
+      temperature: 0,
+    });
+    parsed = tryParseJson<unknown>(retry.text ?? "");
   }
-  const parsed = JSON.parse(match[0]);
+
+  if (!parsed) {
+    throw new Error(
+      "Coach did not return valid JSON after retry. Raw: " + text.slice(0, 200),
+    );
+  }
   return coachAdviceSchema.parse(parsed);
 }
