@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -66,7 +65,6 @@ interface SpeechRecognitionInstance extends EventTarget {
 type SpeechRecognitionCtor = new () => SpeechRecognitionInstance;
 
 export function ProblemSolver({ problemId }: { problemId: string }) {
-  const router = useRouter();
   const [text, setText] = useState("");
   const [isVoice, setIsVoice] = useState(false);
   const [recording, setRecording] = useState(false);
@@ -162,7 +160,9 @@ export function ProblemSolver({ problemId }: { problemId: string }) {
       const data: SubmitResp = await res.json();
       setResult(data);
       toast.success(`Scored ${data.score.toLocaleString()} / 10,000`);
-      router.refresh();
+      // Note: not calling router.refresh() — RSC merge with Radix Dialog
+      // portal leaves new rows un-hydrated. Verdict card has all info
+      // immediately; recent attempts list refreshes on next navigation.
     });
   }
 
