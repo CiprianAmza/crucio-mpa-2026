@@ -3,7 +3,7 @@ import { google } from "@ai-sdk/google";
 import { z } from "zod";
 import { coachTools } from "./tools";
 
-const MODEL_ID = "gemini-2.5-flash";
+const MODEL_ID = "gemini-2.5-flash-lite";
 
 export const coachAdviceSchema = z.object({
   summary: z.string(),

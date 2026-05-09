@@ -3,7 +3,7 @@ import { google } from "@ai-sdk/google";
 import { z } from "zod";
 import { evaluatorTools } from "./tools";
 
-const MODEL_ID = "gemini-2.5-flash";
+const MODEL_ID = "gemini-2.5-flash-lite";
 
 export const evaluationSchema = z.object({
   score: z.number().int().min(0).max(10000),
