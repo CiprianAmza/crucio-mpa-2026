@@ -19,9 +19,9 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+  if (!process.env.CEREBRAS_API_KEY) {
     return NextResponse.json(
-      { error: "GOOGLE_GENERATIVE_AI_API_KEY is not configured" },
+      { error: "CEREBRAS_API_KEY is not configured" },
       { status: 500 },
     );
   }
