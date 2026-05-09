@@ -9,8 +9,10 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Sparkles, Mic, Type as TypeIcon } from "lucide-react";
+import { Sparkles, Mic, Type as TypeIcon, Copy, Check } from "lucide-react";
+import { toast } from "sonner";
 
 type Evaluation = {
   score: number;
@@ -53,8 +55,20 @@ export function SubmissionDetailRow({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const evaluation = safeParseFeedback(submission.feedback);
   const when = new Date(submission.createdAt);
+
+  async function copyAnswer() {
+    try {
+      await navigator.clipboard.writeText(submission.answerText);
+      setCopied(true);
+      toast.success("Answer copied to clipboard");
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      toast.error("Could not copy. Try selecting the text manually.");
+    }
+  }
 
   return (
     <>
@@ -119,8 +133,30 @@ export function SubmissionDetailRow({
             <Progress value={submission.score / 100} className="h-2" />
 
             <div>
-              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
-                Your answer
+              <div className="flex items-center justify-between mb-1">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Your answer
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={copyAnswer}
+                  title="Copy answer to clipboard"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="h-3 w-3 mr-1 text-emerald-400" />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3 w-3 mr-1" />
+                      Copy
+                    </>
+                  )}
+                </Button>
               </div>
               <div className="bg-black/40 border border-white/10 rounded-md p-3 text-sm whitespace-pre-wrap font-mono leading-relaxed max-h-48 overflow-y-auto">
                 {submission.answerText}
