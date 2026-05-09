@@ -1,10 +1,10 @@
 import { generateText, generateObject, stepCountIs } from "ai";
-import { google } from "@ai-sdk/google";
+import { cerebras } from "@ai-sdk/cerebras";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { evaluatorTools } from "./tools";
 
-const MODEL_ID = "gemini-2.5-flash-lite";
+const MODEL_ID = "llama-3.3-70b";
 
 // Schema returned by the LLM (Pass 2). The overall `score` is computed
 // deterministically server-side from per-criterion scores + rubric weights —
@@ -131,7 +131,7 @@ ${args.answer}
 Now analyse. You may call search_user_prior_answers once if useful. Then write your evaluation in natural language, using the EXACT criterion names from the rubric.`;
 
   const analysis = await generateText({
-    model: google(MODEL_ID),
+    model: cerebras(MODEL_ID),
     system: ANALYSIS_SYSTEM,
     prompt: analysisPrompt,
     tools: { searchUserPriorAnswers: evaluatorTools.searchUserPriorAnswers },
@@ -145,7 +145,7 @@ Now analyse. You may call search_user_prior_answers once if useful. Then write y
   }
 
   const formatted = await generateObject({
-    model: google(MODEL_ID),
+    model: cerebras(MODEL_ID),
     schema: llmEvaluationSchema,
     system: FORMATTER_SYSTEM,
     prompt: `Convert this analysis into the structured evaluation JSON. Rubric criterion names (use these exactly):

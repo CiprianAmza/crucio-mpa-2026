@@ -1,9 +1,9 @@
 import { generateText, generateObject, stepCountIs } from "ai";
-import { google } from "@ai-sdk/google";
+import { cerebras } from "@ai-sdk/cerebras";
 import { z } from "zod";
 import { coachTools } from "./tools";
 
-const MODEL_ID = "gemini-2.5-flash-lite";
+const MODEL_ID = "llama-3.3-70b";
 
 export const coachAdviceSchema = z.object({
   summary: z.string(),
@@ -60,7 +60,7 @@ export async function getCoachAdvice(args: {
 Build their personalized coaching plan now. Use the tools, then write the plan as natural language.`;
 
   const analysis = await generateText({
-    model: google(MODEL_ID),
+    model: cerebras(MODEL_ID),
     system: ANALYSIS_SYSTEM,
     prompt: analysisPrompt,
     tools: coachTools,
@@ -74,7 +74,7 @@ Build their personalized coaching plan now. Use the tools, then write the plan a
   }
 
   const formatted = await generateObject({
-    model: google(MODEL_ID),
+    model: cerebras(MODEL_ID),
     schema: coachAdviceSchema,
     system: FORMATTER_SYSTEM,
     prompt: `Convert this coaching plan into the structured JSON:
