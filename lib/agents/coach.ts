@@ -3,7 +3,7 @@ import { cerebras } from "@ai-sdk/cerebras";
 import { z } from "zod";
 import { coachTools } from "./tools";
 
-const MODEL_ID = "llama-3.3-70b";
+const MODEL_ID = "llama3.1-8b";
 
 export const coachAdviceSchema = z.object({
   summary: z.string(),

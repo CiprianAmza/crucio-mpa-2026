@@ -4,7 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { evaluatorTools } from "./tools";
 
-const MODEL_ID = "llama-3.3-70b";
+const MODEL_ID = "llama3.1-8b";
 
 // Schema returned by the LLM (Pass 2). The overall `score` is computed
 // deterministically server-side from per-criterion scores + rubric weights —
