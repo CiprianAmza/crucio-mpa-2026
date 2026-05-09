@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ProblemSolver } from "@/components/problem-solver";
-import { SubmissionDetailDialog } from "@/components/submission-detail-dialog";
+import { SubmissionDetailRow } from "@/components/submission-detail-dialog";
 import { Target, ChevronRight } from "lucide-react";
 
 function difficultyLabel(d: number) {
@@ -87,31 +87,26 @@ export default async function ProblemDetailPage({
             <ul className="space-y-1">
               {previous.map((s) => (
                 <li key={s.id}>
-                  <SubmissionDetailDialog
+                  <SubmissionDetailRow
                     submission={{ ...s, problemTitle: problem.title }}
-                    trigger={
-                      <button
-                        type="button"
-                        className="w-full flex justify-between items-center gap-2 font-mono text-xs px-2 py-2 rounded hover:bg-white/5 transition text-left"
-                      >
-                        <span className="text-muted-foreground">
-                          {new Date(s.createdAt).toLocaleString()}
-                          {s.isVoice ? " · voice" : " · text"}
-                        </span>
-                        <span className="flex items-center gap-2">
-                          Score{" "}
-                          <span className="text-rose-300">{s.score.toLocaleString()}</span>
-                          {" · "}
-                          ELO{" "}
-                          <span className={s.eloDelta >= 0 ? "text-emerald-400" : "text-red-400"}>
-                            {s.eloDelta >= 0 ? "+" : ""}
-                            {s.eloDelta}
-                          </span>
-                          <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                        </span>
-                      </button>
-                    }
-                  />
+                    className="w-full flex justify-between items-center gap-2 font-mono text-xs px-2 py-2 rounded hover:bg-white/5 transition text-left"
+                  >
+                    <span className="text-muted-foreground">
+                      {new Date(s.createdAt).toLocaleString()}
+                      {s.isVoice ? " · voice" : " · text"}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      Score{" "}
+                      <span className="text-rose-300">{s.score.toLocaleString()}</span>
+                      {" · "}
+                      ELO{" "}
+                      <span className={s.eloDelta >= 0 ? "text-emerald-400" : "text-red-400"}>
+                        {s.eloDelta >= 0 ? "+" : ""}
+                        {s.eloDelta}
+                      </span>
+                      <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                    </span>
+                  </SubmissionDetailRow>
                 </li>
               ))}
             </ul>

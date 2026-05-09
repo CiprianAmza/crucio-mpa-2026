@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { SubmissionDetailDialog } from "@/components/submission-detail-dialog";
+import { SubmissionDetailRow } from "@/components/submission-detail-dialog";
 import { Trophy, Calendar } from "lucide-react";
 
 export default async function ProfilePage() {
@@ -104,40 +104,36 @@ export default async function ProfilePage() {
               <ul className="divide-y divide-white/5">
                 {submissions.map((s) => (
                   <li key={s.id}>
-                    <SubmissionDetailDialog
+                    <SubmissionDetailRow
                       submission={{ ...s, problemTitle: s.problem.title }}
-                      trigger={
-                        <button
-                          type="button"
-                          className="w-full py-3 px-2 flex items-center justify-between text-sm rounded hover:bg-white/5 transition text-left"
+                      className="w-full py-3 px-2 flex items-center justify-between text-sm rounded hover:bg-white/5 transition text-left"
+                    >
+                      <span className="block">
+                        <span className="font-medium">{s.problem.title}</span>
+                        <span className="block text-xs text-muted-foreground">
+                          {new Date(s.createdAt).toLocaleString()}
+                          {s.isVoice && (
+                            <Badge variant="outline" className="ml-2 text-xs">
+                              voice
+                            </Badge>
+                          )}
+                        </span>
+                      </span>
+                      <span className="text-right font-mono text-xs block">
+                        <span className="text-rose-300 font-bold block">
+                          {s.score.toLocaleString()}
+                        </span>
+                        <span
+                          className={
+                            "block " +
+                            (s.eloDelta >= 0 ? "text-emerald-400" : "text-red-400")
+                          }
                         >
-                          <div>
-                            <span className="font-medium">{s.problem.title}</span>
-                            <div className="text-xs text-muted-foreground">
-                              {new Date(s.createdAt).toLocaleString()}
-                              {s.isVoice && (
-                                <Badge variant="outline" className="ml-2 text-xs">
-                                  voice
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                          <div className="text-right font-mono text-xs">
-                            <div className="text-rose-300 font-bold">
-                              {s.score.toLocaleString()}
-                            </div>
-                            <div
-                              className={
-                                s.eloDelta >= 0 ? "text-emerald-400" : "text-red-400"
-                              }
-                            >
-                              {s.eloDelta >= 0 ? "+" : ""}
-                              {s.eloDelta} ELO
-                            </div>
-                          </div>
-                        </button>
-                      }
-                    />
+                          {s.eloDelta >= 0 ? "+" : ""}
+                          {s.eloDelta} ELO
+                        </span>
+                      </span>
+                    </SubmissionDetailRow>
                   </li>
                 ))}
               </ul>
