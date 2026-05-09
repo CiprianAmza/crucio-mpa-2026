@@ -1,8 +1,8 @@
-import { generateText, stepCountIs } from "ai";
+import { generateText, generateObject, stepCountIs } from "ai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
+import { prisma } from "@/lib/db";
 import { evaluatorTools } from "./tools";
-import { tryParseJson } from "./parse";
 
 const MODEL_ID = "gemini-2.5-flash-lite";
 
@@ -23,77 +23,112 @@ export const evaluationSchema = z.object({
 
 export type Evaluation = z.infer<typeof evaluationSchema>;
 
-const SYSTEM = `You are the Crucio Evaluator. You grade free-text answers to Java interview questions.
+const ANALYSIS_SYSTEM = `You are the Crucio Evaluator — a senior interviewer grading free-text Java answers.
 
-Your loop:
-1. ALWAYS first call get_problem_rubric for the given problemId to fetch the per-criterion rubric.
-2. Optionally call search_user_prior_answers to detect repeated patterns.
-3. Score the answer against EACH criterion in the rubric, weighted by the criterion weight.
-4. Return ONLY a final JSON block in the EXACT shape:
-{
-  "score": <0..10000 integer>,
-  "oneLine": "<one sentence summary>",
-  "perCriterion": [{"name":"...", "score": <0..100>, "comment":"..."}],
-  "strengths": ["..."],
-  "gaps": ["..."],
-  "studyHints": ["..."]
-}
+You are given:
+- The interview question
+- The per-criterion rubric (already loaded for you)
+- The candidate's answer
 
-Rules:
-- Be honest and specific. Do not be sycophantic.
-- 0–3000 = poor / off-topic. 3000–6000 = partial. 6000–8500 = solid. 8500+ = excellent with depth.
-- Never reproduce the user's text verbatim — comment on it.
-- Output ONLY the JSON. No preamble, no markdown fences.`;
+Optionally call search_user_prior_answers if you want to detect repeated patterns from this user.
+
+Then write a CONCISE analysis (2-4 short paragraphs). Address each rubric criterion:
+- Did the answer cover it? Quality 0-100 per criterion.
+- Specific quotes/concepts from the answer that worked or didn't.
+- Top 2-3 strengths.
+- Top 2-3 gaps.
+- 2-3 concrete study hints.
+
+Be honest. Don't be sycophantic. Score thresholds:
+- 0–3000 = poor / off-topic
+- 3000–6000 = partial
+- 6000–8500 = solid
+- 8500+ = excellent with depth
+
+Don't output JSON yet — that comes in a second pass. Just write your analysis as natural language.`;
+
+const FORMATTER_SYSTEM = `You convert evaluation analyses into a strict JSON schema. Read the analysis and emit the JSON object exactly per the schema. Score must be 0..10000 integer. Per-criterion scores 0..100 integer.`;
 
 export async function evaluateAnswer(args: {
   userId: string;
   problemId: string;
   answer: string;
 }): Promise<Evaluation> {
-  const userPrompt = `Problem id: ${args.problemId}
+  // Pre-fetch problem + rubric (no need to make this a tool call — saves 1 LLM step
+  // and guarantees the rubric is always available to the evaluator).
+  const problem = await prisma.problem.findUnique({
+    where: { id: args.problemId },
+    select: { id: true, title: true, prompt: true, rubric: true, difficulty: true },
+  });
+  if (!problem) throw new Error("Problem not found");
+
+  let rubricStr: string;
+  try {
+    rubricStr = JSON.stringify(JSON.parse(problem.rubric), null, 2);
+  } catch {
+    rubricStr = problem.rubric;
+  }
+
+  // Pass 1: agentic analysis (with optional prior-answers tool)
+  const analysisPrompt = `Question (id ${problem.id}): ${problem.title}
+${problem.prompt}
+
+Rubric:
+${rubricStr}
+
 User id: ${args.userId}
 
-User's answer (free-text, may have been transcribed from voice):
+Candidate's answer (free-text or voice transcript):
 """
 ${args.answer}
 """
 
-Now grade it. Call tools first, then return ONLY the final JSON.`;
+Now analyse. You may call search_user_prior_answers once if useful. Then write your evaluation in natural language.`;
 
-  const result = await generateText({
+  const analysis = await generateText({
     model: google(MODEL_ID),
-    system: SYSTEM,
-    prompt: userPrompt,
-    tools: evaluatorTools,
-    stopWhen: stepCountIs(6),
+    system: ANALYSIS_SYSTEM,
+    prompt: analysisPrompt,
+    tools: { searchUserPriorAnswers: evaluatorTools.searchUserPriorAnswers },
+    stopWhen: stepCountIs(4),
     temperature: 0.2,
   });
 
-  const text = result.text ?? "";
-  let parsed = tryParseJson<unknown>(text);
-
-  // Retry once with a tighter prompt if the model emitted prose-only or malformed JSON
-  if (!parsed) {
-    const retry = await generateText({
-      model: google(MODEL_ID),
-      system:
-        "You are a JSON formatter. Convert the input into the exact JSON shape requested. Output ONLY the JSON object, no markdown fences, no preamble.",
-      prompt: `The previous evaluation response was malformed:
-"""
-${text.slice(0, 4000)}
-"""
-
-Re-emit it as a single valid JSON object with EXACTLY these keys: score (int 0..10000), oneLine (string), perCriterion (array of {name, score 0..100, comment}), strengths (array of strings), gaps (array of strings), studyHints (array of strings).`,
-      temperature: 0,
-    });
-    parsed = tryParseJson<unknown>(retry.text ?? "");
+  // Collect any text emitted across steps (defensive: some models emit text mid-loop).
+  const analysisText = collectStepText(analysis) || analysis.text || "";
+  if (!analysisText.trim()) {
+    throw new Error("Evaluator produced no analysis text.");
   }
 
-  if (!parsed) {
-    throw new Error(
-      "Evaluator did not return valid JSON after retry. Raw: " +
-        text.slice(0, 200),
-    );
+  // Pass 2: structured output via generateObject (guaranteed schema-conformant JSON)
+  const formatted = await generateObject({
+    model: google(MODEL_ID),
+    schema: evaluationSchema,
+    system: FORMATTER_SYSTEM,
+    prompt: `Convert this analysis into the structured evaluation JSON:
+
+"""
+${analysisText}
+"""`,
+    temperature: 0,
+  });
+
+  return formatted.object;
+}
+
+type StepWithContent = {
+  content?: Array<{ type: string; text?: string }>;
+  text?: string;
+};
+
+function collectStepText(result: { steps?: StepWithContent[] }): string {
+  if (!result.steps) return "";
+  const chunks: string[] = [];
+  for (const step of result.steps) {
+    if (step.text) chunks.push(step.text);
+    for (const part of step.content ?? []) {
+      if (part.type === "text" && part.text) chunks.push(part.text);
+    }
   }
-  return evaluationSchema.parse(parsed);
+  return chunks.join("\n").trim();
 }
