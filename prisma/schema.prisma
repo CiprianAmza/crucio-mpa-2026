@@ -1,0 +1,82 @@
+// Crucio — schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id            String       @id @default(cuid())
+  email         String       @unique
+  name          String?
+  passwordHash  String
+  image         String?
+  eloRating     Int          @default(1200)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  submissions     Submission[]
+  recommendations Recommendation[]
+}
+
+model Topic {
+  id       String         @id @default(cuid())
+  slug     String         @unique
+  name     String
+  problems ProblemTopic[]
+}
+
+model Problem {
+  id          String         @id @default(cuid())
+  slug        String         @unique
+  title       String
+  prompt      String
+  rubric      String
+  difficulty  Int
+  baseElo     Int            @default(1200)
+  topics      ProblemTopic[]
+  submissions Submission[]
+  createdAt   DateTime       @default(now())
+}
+
+model ProblemTopic {
+  problemId String
+  topicId   String
+  problem   Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  topic     Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@id([problemId, topicId])
+}
+
+model Submission {
+  id         String   @id @default(cuid())
+  userId     String
+  problemId  String
+  answerText String
+  isVoice    Boolean  @default(false)
+  score      Int
+  feedback   String
+  eloDelta   Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([problemId])
+}
+
+model Recommendation {
+  id        String   @id @default(cuid())
+  userId    String
+  payload   String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
