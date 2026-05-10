@@ -59,7 +59,7 @@ cu input vocal prin Web Speech API, ELO leaderboard și rubrici curate per probl
 
 ## Context academic
 
-Crucio este proiectul de echipă pentru cursul **MPA 2026 — Modele și Practici Agile** (titular curs: prof. Alin Ștefănescu, alin.stefanescu@unibuc.ro). Cerința: simularea unui startup sau a unui produs nou într-o companie mare, folosind tehnologii de tip **Agentic AI** — minimum 2 agenți funcționali, MVP rulabil cu cel puțin jumătate din funcționalități implementate, plus livrabile complete de business (Business Foundation document, landing page, pitch deck).
+Crucio este proiectul de echipă pentru cursul **MPA 2026 — Management de Produs si Antreprenoriat** (titular curs: prof. Alin Ștefănescu, alin.stefanescu@unibuc.ro). Cerința: simularea unui startup sau a unui produs nou într-o companie mare, folosind tehnologii de tip **Agentic AI** — minimum 2 agenți funcționali, MVP rulabil cu cel puțin jumătate din funcționalități implementate, plus livrabile complete de business (Business Foundation document, landing page, pitch deck).
 
 ---
 
