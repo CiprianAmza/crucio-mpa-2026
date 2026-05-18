@@ -14,6 +14,9 @@ import {
   Sparkles,
   Bot,
   Flame,
+  Check,
+  Mail,
+  Tag,
 } from "lucide-react";
 
 export default async function HomePage() {
@@ -145,6 +148,138 @@ export default async function HomePage() {
             </div>
           </CardContent>
         </Card>
+      </section>
+
+      <section id="pricing" className="container mx-auto px-4 py-20">
+        <div className="text-center mb-12">
+          <Badge variant="outline" className="border-rose-500/40 text-rose-300 mb-4">
+            <Tag className="h-3 w-3 mr-1" />
+            Pricing
+          </Badge>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+            Free during testing.{" "}
+            <span className="text-rose-400">Pick your tier when you scale.</span>
+          </h2>
+          <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
+            Start free, no credit card. Upgrade if you want unlimited reps + the Coach agent.
+            Companies and universities have dedicated tiers.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
+          {/* FREE */}
+          <Card className="border-white/10 bg-black/30 flex flex-col hover:border-rose-500/30 transition">
+            <CardHeader>
+              <div className="text-xs uppercase tracking-wider text-rose-300">Free</div>
+              <CardTitle className="text-3xl font-extrabold mt-1">
+                €0
+                <span className="text-sm text-muted-foreground font-normal ml-1">/ forever</span>
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">Perfect for trying it out.</p>
+            </CardHeader>
+            <CardContent className="flex flex-col flex-1">
+              <ul className="space-y-2 text-sm mb-6 flex-1">
+                <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" /> 5 evaluations / day</li>
+                <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" /> Full per-rubric feedback</li>
+                <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" /> Public ELO leaderboard</li>
+                <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" /> Voice + text input</li>
+              </ul>
+              <Link href={session ? "/problems" : "/signup"}>
+                <Button variant="outline" className="w-full">
+                  {session ? "Open dojo" : "Start free"}
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* PRO — featured */}
+          <Card className="border-rose-500/50 bg-gradient-to-br from-rose-900/30 to-black flex flex-col relative shadow-lg shadow-rose-900/20">
+            <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-rose-600 hover:bg-rose-600 border-0">
+              Most popular
+            </Badge>
+            <CardHeader>
+              <div className="text-xs uppercase tracking-wider text-rose-300">Pro</div>
+              <CardTitle className="text-3xl font-extrabold mt-1">
+                €9.99
+                <span className="text-sm text-muted-foreground font-normal ml-1">/ month</span>
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">For serious interview prep.</p>
+            </CardHeader>
+            <CardContent className="flex flex-col flex-1">
+              <ul className="space-y-2 text-sm mb-6 flex-1">
+                <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" /> Unlimited evaluations</li>
+                <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" /> <strong>Coach agent</strong> — personalised plan</li>
+                <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" /> Full ELO history + export</li>
+                <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" /> Priority on new features</li>
+                <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" /> Email support</li>
+              </ul>
+              <Link href={session ? "/problems?upgrade=pro" : "/signup?tier=pro"}>
+                <Button className="w-full bg-rose-600 hover:bg-rose-700">
+                  Upgrade to Pro
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* B2B */}
+          <Card className="border-white/10 bg-black/30 flex flex-col hover:border-rose-500/30 transition">
+            <CardHeader>
+              <div className="text-xs uppercase tracking-wider text-rose-300">B2B Screening</div>
+              <CardTitle className="text-3xl font-extrabold mt-1">
+                €499
+                <span className="text-sm text-muted-foreground font-normal ml-1">/ seat / mo</span>
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">For recruiting teams.</p>
+            </CardHeader>
+            <CardContent className="flex flex-col flex-1">
+              <ul className="space-y-2 text-sm mb-6 flex-1">
+                <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" /> Recruiter dashboard</li>
+                <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" /> Custom rubrics per role</li>
+                <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" /> Async candidate links</li>
+                <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" /> ATS integration (Greenhouse, Lever)</li>
+                <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" /> SLA & dedicated support</li>
+              </ul>
+              <a href="mailto:sales@crucio.dev?subject=B2B%20Screening%20enquiry&body=Hi%20Crucio%20team%2C%20I%27d%20like%20to%20learn%20more%20about%20the%20B2B%20Screening%20tier.">
+                <Button variant="outline" className="w-full">
+                  <Mail className="h-4 w-4 mr-1" />
+                  Contact sales
+                </Button>
+              </a>
+            </CardContent>
+          </Card>
+
+          {/* UNIVERSITY */}
+          <Card className="border-white/10 bg-black/30 flex flex-col hover:border-rose-500/30 transition">
+            <CardHeader>
+              <div className="text-xs uppercase tracking-wider text-rose-300">University</div>
+              <CardTitle className="text-3xl font-extrabold mt-1">
+                €3,000
+                <span className="text-sm text-muted-foreground font-normal ml-1">/ year</span>
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">For institutions & bootcamps.</p>
+            </CardHeader>
+            <CardContent className="flex flex-col flex-1">
+              <ul className="space-y-2 text-sm mb-6 flex-1">
+                <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" /> Unlimited student seats</li>
+                <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" /> Cohort analytics</li>
+                <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" /> SSO (Google, Microsoft)</li>
+                <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" /> Custom problem packs</li>
+                <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" /> On-site training day</li>
+              </ul>
+              <a href="mailto:partnerships@crucio.dev?subject=University%20license%20enquiry&body=Hi%20Crucio%20team%2C%20I%20represent%20a%20university%20%2F%20bootcamp%20and%20want%20to%20learn%20about%20institutional%20licensing.">
+                <Button variant="outline" className="w-full">
+                  <Mail className="h-4 w-4 mr-1" />
+                  Talk to us
+                </Button>
+              </a>
+            </CardContent>
+          </Card>
+        </div>
+
+        <p className="text-center mt-8 text-xs text-muted-foreground">
+          All tiers include voice input, ELO leaderboard, and AI evaluation with per-criterion feedback.
+          Pricing in EUR · VAT not included · Paid tiers launch Q3 2026.
+        </p>
       </section>
 
       <section className="container mx-auto px-4 py-24 text-center">

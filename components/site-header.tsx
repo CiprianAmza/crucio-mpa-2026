@@ -22,6 +22,9 @@ export async function SiteHeader() {
           <Link href="/leaderboard" className="text-muted-foreground hover:text-foreground transition">
             Leaderboard
           </Link>
+          <Link href="/#pricing" className="text-muted-foreground hover:text-foreground transition hidden sm:inline">
+            Pricing
+          </Link>
           <Link href="/pitch" className="text-muted-foreground hover:text-foreground transition hidden md:inline">
             Pitch
           </Link>

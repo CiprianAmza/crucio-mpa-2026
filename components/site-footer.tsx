@@ -24,6 +24,7 @@ export function SiteFooter() {
             <li><Link href="/problems" className="hover:text-rose-300">Problems</Link></li>
             <li><Link href="/leaderboard" className="hover:text-rose-300">Leaderboard</Link></li>
             <li><Link href="/profile" className="hover:text-rose-300">Profile</Link></li>
+            <li><Link href="/#pricing" className="hover:text-rose-300">Pricing</Link></li>
           </ul>
         </div>
 
